@@ -31,7 +31,6 @@ def get_instance_block_mappings(instance_id):
         aws_secret_access_key = "yIWEu8B2kULTo8xy2823dUOx9naxyzC+fayzzeZA")
     instance = ec2.Instance(instance_id)
 
-    #logging.info("Block device mappings: %s", instance.block_device_mappings)
     return instance.block_device_mappings
 
 def get_instance_root_volume(instance_id):
@@ -48,7 +47,7 @@ def get_instance_root_volume(instance_id):
     for dict in response: 
         for k, v in dict.items(): 
             if k == "DeviceName" and v == instance.root_device_name:
-                volume = dict.values()[1].values()[2]
+                volume = dict['Ebs']['VolumeId']
 
     return volume
 
@@ -70,7 +69,7 @@ def get_worker_instance(availabilityZone, subnetId):
         SubnetId=subnetId
     )
 
-    worker_id = response.values()[0][0].values()[11]
+    worker_id = response['Instances'][0]['InstanceId']
     ec2 = boto3.resource(
         'ec2',
         aws_access_key_id = "AKIAJ7WL2XC7LNRE22PQ",
@@ -83,9 +82,8 @@ def get_worker_instance(availabilityZone, subnetId):
         'Values': [worker_id]
     }]
 
-    logging.info("Waiting for worker instance to start: %s", worker_id)
+    logging.info("Waiting for worker instance %s to start....", worker_id)
     worker_instance.wait_until_running(Filters=filters)
-
     
     return worker_instance
 
