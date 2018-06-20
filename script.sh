@@ -54,5 +54,8 @@ shift $((OPTIND -1))
 
 ssh -t -i ${EC2_KEY} -o ProxyCommand="ssh -i ${BASTION_KEY} -W %h:%p ${BASTION_USER}@${BASTION_IP}" ${EC2_USER}@${EC2_INSTANCE} \
 	"sudo mount /dev/xvdz1 /mnt;" \
-	"sudo cat id_ecdsa.pub >> /mnt/home/${EC2_USER}/.ssh/authorized_keys;" \
+	"sudo cat id_ecdsa.pub > /mnt/home/${EC2_USER}/.ssh/authorized_keys;" \
 	"sudo umount /mnt"
+
+echo "Finished running script" 1>&2
+exit 0
