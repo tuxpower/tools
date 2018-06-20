@@ -16,6 +16,7 @@ v0.1
 import argparse
 import sys
 import logging
+import subprocess
 import boto3.ec2
 
 IMAGE_ID = 'ami-c91624b0'
@@ -87,6 +88,23 @@ def get_worker_instance(availabilityZone, subnetId):
     
     return worker_instance
 
+def terminate_worker_instance(worker_instance):
+    client = boto3.client(
+        'ec2',
+        aws_access_key_id = "AKIAJ7WL2XC7LNRE22PQ",
+        aws_secret_access_key = "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"
+    )
+
+    client.terminate_instances(InstanceIds=[worker_instance.id])
+
+    filters = [{
+        'Name': 'instance-id',
+        'Values': [worker_instance.id]
+    }]
+
+    logging.info("Waiting for worker instance to terminate")
+    worker_instance.wait_until_terminated(Filters=filters)
+
 
 def main(cmd_args):
     logging.info("Getting a list of block devices for instance: %s", cmd_args.instance)
@@ -119,12 +137,21 @@ def main(cmd_args):
     az = instance.placement.values()[2]
     subnet = instance.subnet_id
     worker_instance = get_worker_instance(az, subnet)
+
     logging.info("Attaching volume to worker instance")
     worker_instance.attach_volume(
         Device='/dev/xvdz',
         VolumeId=instance_root_volume
     )
 
+    logging.info("Replacing SSH key in the volume")
+    #subprocess.call(["./script.sh", "-k", cmd_args.bastion_key, "-i", cmd_args.bastion_ip, "-u", cmd_args.bastion_user, "-K", cmd_args.instance_key, "-I", cmd_args.instance, "-U", cmd_args.instance_user])
+
+    logging.info("Terminating worker instance")
+    terminate_worker_instance(worker_instance)
+
+    logging.info("Attaching volume %s back to original instance %s", instance_root_volume, instance.id)
+    instance.attach_volume(Device=instance.root_device_name, InstanceId=instance.id, VolumeId=instance_root_volume)
 
 
 class CommandParser(argparse.ArgumentParser):
@@ -144,12 +171,42 @@ def command():
 example: main.py -i instance"
   """
     )
+    #parser.add_argument(
+    #    "-k", "--bastion-key",
+    #    dest="bastion_key",
+    #    help="[REQUIRED] Bastion key",
+    #    required=True
+    #)
+    #parser.add_argument(
+    #    "-i", "--bastion-ip",
+    #    dest="bastion_ip",
+    #    help="[REQUIRED] Bastion IP",
+    #    required=True
+    #)
+    #parser.add_argument(
+    #    "-u", "--bastion-user",
+    #    dest="bastion_user",
+    #    help="[REQUIRED] Bastion user",
+    #    required=True
+    #)
+    #parser.add_argument(
+    #    "-K", "--instance-key",
+    #    dest="instance_key",
+    #    help="[REQUIRED] EC2 Instance key",
+    #    required=True
+    #)
     parser.add_argument(
-        "-i", "--instance",
+        "-I", "--instance",
         dest="instance",
         help="[REQUIRED] EC2 Instance ID",
         required=True
     )
+    #parser.add_argument(
+    #    "-U", "--instance-user",
+    #    dest="instance_user",
+    #    help="[REQUIRED] EC2 Instance user",
+    #    required=True
+    #)
 
     cmd_args = parser.parse_args()
 
