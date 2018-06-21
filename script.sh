@@ -26,7 +26,7 @@ while getopts ":k:i:u:K:I:U:" opt; do
       EC2_KEY=${OPTARG}
     ;;
     I)
-      EC2_INSTANCE=${OPTARG}
+      EC2_IP=${OPTARG}
     ;;
     U)
       EC2_USER=${OPTARG}
@@ -45,16 +45,19 @@ while getopts ":k:i:u:K:I:U:" opt; do
  done
 shift $((OPTIND -1))
 
-#BASTION_KEY=$1
-#BASTION_IP=$2
-#BASTION_USER=$3
-#EC2_KEY=$4
-#EC2_INSTANCE=$5
-#EC2_USER=$6
+sleep 60;
 
-ssh -t -i ${EC2_KEY} -o ProxyCommand="ssh -i ${BASTION_KEY} -W %h:%p ${BASTION_USER}@${BASTION_IP}" ${EC2_USER}@${EC2_INSTANCE} \
+scp -i ${EC2_KEY} -o ProxyCommand="ssh -i ${BASTION_KEY} -W %h:%p ${BASTION_USER}@${BASTION_IP}" \
+	-o StrictHostKeyChecking=no \
+	-o UserKnownHostsFile=/dev/null \
+	~/.ssh/id_ecdsa.pub ${EC2_USER}@${EC2_IP}:
+
+ssh -t -i ${EC2_KEY} -o ProxyCommand="ssh -i ${BASTION_KEY} -W %h:%p ${BASTION_USER}@${BASTION_IP}" ${EC2_USER}@${EC2_IP} \
+	-o StrictHostKeyChecking=no \
+	-o UserKnownHostsFile=/dev/null \
 	"sudo mount /dev/xvdz1 /mnt;" \
 	"sudo cat id_ecdsa.pub > /mnt/home/${EC2_USER}/.ssh/authorized_keys;" \
+	"rm id_ecdsa.pub;" \
 	"sudo umount /mnt"
 
 echo "Finished running script" 1>&2
