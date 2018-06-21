@@ -30,13 +30,11 @@ client = boto3.client('ec2')
 
 def get_instance_root_volume(instance_id):
     instance = ec2.Instance(instance_id)
+    blocks = list(instance.block_device_mappings)
 
-    logging.info("Root device name: %s", instance.root_device_name)
-
-    for blocks in list(instance.block_device_mappings):
-        for k, v in blocks.items():
-            if k == "DeviceName" and v == instance.root_device_name:
-                volume = blocks['Ebs']['VolumeId']
+    for block in blocks:
+        if block['DeviceName'] == instance.root_device_name:
+            volume = block['Ebs']['VolumeId']
 
     return volume
 
