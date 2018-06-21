@@ -25,14 +25,15 @@ KEY_NAME = 'jgaspar'
 MAX_COUNT=1
 MIN_COUNT=1
 
+ec2 = boto3.resource('ec2')
+client = boto3.client('ec2')
+
 def get_instance_block_mappings(instance_id):
-    ec2 = boto3.resource('ec2')
     instance = ec2.Instance(instance_id)
 
     return instance.block_device_mappings
 
 def get_instance_root_volume(instance_id):
-    ec2 = boto3.resource('ec2')
     instance = ec2.Instance(instance_id)
 
     logging.info("Root device name: %s", instance.root_device_name)
@@ -46,7 +47,6 @@ def get_instance_root_volume(instance_id):
     return volume
 
 def get_worker_instance(availabilityZone, subnetId):
-    client = boto3.client('ec2')
     response = client.run_instances(
         ImageId=IMAGE_ID,
         InstanceType=INSTANCE_TYPE,
@@ -60,7 +60,6 @@ def get_worker_instance(availabilityZone, subnetId):
     )
 
     worker_id = response['Instances'][0]['InstanceId']
-    ec2 = boto3.resource('ec2')
     worker_instance = ec2.Instance(worker_id)
     
     filters = [{
@@ -74,8 +73,6 @@ def get_worker_instance(availabilityZone, subnetId):
     return worker_instance
 
 def terminate_worker_instance(worker_instance):
-    client = boto3.client('ec2')
-
     client.terminate_instances(InstanceIds=[worker_instance.id])
 
     filters = [{
@@ -93,9 +90,7 @@ def main(cmd_args):
     instance_root_volume = get_instance_root_volume(cmd_args.instance)
     logging.info("Root volume ID: %s", instance_root_volume)
 
-    ec2 = boto3.resource('ec2')
     instance = ec2.Instance(cmd_args.instance)
-
 
     filters = [{
         'Name': 'instance-id',
