@@ -28,21 +28,15 @@ MIN_COUNT=1
 ec2 = boto3.resource('ec2')
 client = boto3.client('ec2')
 
-def get_instance_block_mappings(instance_id):
-    instance = ec2.Instance(instance_id)
-
-    return instance.block_device_mappings
-
 def get_instance_root_volume(instance_id):
     instance = ec2.Instance(instance_id)
 
     logging.info("Root device name: %s", instance.root_device_name)
 
-    response = list(get_instance_block_mappings(instance_id))
-    for dict in response: 
-        for k, v in dict.items(): 
+    for blocks in list(instance.block_device_mappings):
+        for k, v in blocks.items():
             if k == "DeviceName" and v == instance.root_device_name:
-                volume = dict['Ebs']['VolumeId']
+                volume = blocks['Ebs']['VolumeId']
 
     return volume
 
