@@ -64,17 +64,6 @@ def get_worker_instance(availabilityZone, subnetId):
     
     return worker_instance
 
-def terminate_worker_instance(worker_instance):
-    client.terminate_instances(InstanceIds=[worker_instance.id])
-
-    filters = [{
-        'Name': 'instance-id',
-        'Values': [worker_instance.id]
-    }]
-
-    logging.info("Waiting for worker instance to terminate")
-    worker_instance.wait_until_terminated(Filters=filters)
-
 
 def main(cmd_args):
     logging.info("Getting a list of block devices for instance: %s", cmd_args.instance)
@@ -112,7 +101,15 @@ def main(cmd_args):
     subprocess.call(["./script.sh", "-k", cmd_args.bastion_key, "-i", cmd_args.bastion_ip, "-u", cmd_args.bastion_user, "-K", cmd_args.instance_key, "-I", worker_instance.private_ip_address, "-U", cmd_args.instance_user])
 
     logging.info("Terminating worker instance")
-    terminate_worker_instance(worker_instance)
+    client.terminate_instances(InstanceIds=[worker_instance.id])
+
+    filters = [{
+        'Name': 'instance-id',
+        'Values': [worker_instance.id]
+    }]
+
+    worker_instance.wait_until_terminated(Filters=filters)
+    logging.info("Worker instance terminated")
 
     logging.info("Attaching volume %s back to original instance %s", instance_root_volume, instance.id)
     instance.attach_volume(Device=instance.root_device_name, InstanceId=instance.id, VolumeId=instance_root_volume)
@@ -122,7 +119,7 @@ def main(cmd_args):
         'Values': [instance.id]
     }]
 
-    logging.info("Starting up instance ID: %s", instance.id)
+    logging.info("Starting back original instance %s", instance.id)
     instance.start()
     instance.wait_until_running(Filters=filters)
     logging.info("Instance started")
