@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eux
+set -eu
 
 function usage_message() {
   echo "Usage: script -k bastion_key> -i <bastion_ip> -u <bastion_user> -K <ec2_key> -I <ec2_ip> -U <ec2_user>" 1>&2
