@@ -19,6 +19,15 @@ It's possible to spawn a new shell that ensures all commands have access to inst
 
 ## Usage
 
+You need to set up your AWS security credentials before this script is able to connect to AWS. You can do this by
+exporting these environment variables:
+
+#### AWS_ACCESS_KEY_ID
+The access key for your AWS account.
+
+#### AWS_SECRET_ACCESS_KEY
+The secret key for your AWS account.
+
 This sample script attachs a root volume from a given instance to a second instance in
 the same AZ and adds a public key to a EC2 system user authorized keys file. It then
 attachs that volume back to original instance and tears down the second one.
