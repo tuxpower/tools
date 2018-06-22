@@ -53,7 +53,7 @@ def get_worker_instance(availabilityZone, subnetId):
 
     worker_id = response['Instances'][0]['InstanceId']
     worker_instance = ec2.Instance(worker_id)
-    
+
     filters = [{
         'Name': 'instance-id',
         'Values': [worker_id]
@@ -61,7 +61,7 @@ def get_worker_instance(availabilityZone, subnetId):
 
     logging.info("Waiting for worker instance %s to start....", worker_id)
     worker_instance.wait_until_running(Filters=filters)
-    
+
     return worker_instance
 
 
@@ -85,7 +85,7 @@ def main(cmd_args):
 
     logging.info("Detaching volume ID: %s", instance_root_volume)
     instance.detach_volume(VolumeId=instance_root_volume)
-    
+
     logging.info("Launching a new worker instance.....")
     az = instance.placement.values()[2]
     subnet = instance.subnet_id
