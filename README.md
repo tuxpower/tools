@@ -5,7 +5,7 @@ A simple Python script for adding SSH pub key into a EC2 user on instances that 
 ## Requirements
 
 This sample project depends on `boto3`, the AWS SDK for Python, and requires
-Python 2.6.5+. You can install dependencies for this project run:
+Python 2.6.5+. You can install dependencies for this project running:
 
     pipenv install
 
