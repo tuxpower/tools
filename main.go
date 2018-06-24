@@ -66,22 +66,8 @@ func main() {
 
 	volume := *descResult.Volumes[0].VolumeId
 
-	//fmt.Println(*descResult.Volumes[0].VolumeId)
-	fmt.Println(volume)
-	//var strPtr *string
-	//strPtr = descResult.Volumes[0].VolumeId
-	//fmt.Println(*strPtr)
-
 	_, err = ec2Svc.StopInstances(&ec2.StopInstancesInput{
 		InstanceIds: []*string{aws.String(instanceId)}})
-
-	//inputInst := &ec2.StopInstancesInput{
-	//	InstanceIds: []*string{
-	//		aws.String(instanceId),
-	//	},
-	//}
-
-	//_, err = ec2Svc.StopInstances(inputInst)
 	if err != nil {
 		fmt.Println("Error", err)
 	}
@@ -95,18 +81,9 @@ func main() {
 		VolumeId: aws.String(volume),
 	})
 
-	//inputDetVol := &ec2.DetachVolumeInput{
-	//	VolumeId: []*string{
-	//		aws.String(*strPtr),
-	//	},
-	//}
-
-	//_, err = ec2Svc.DetachVolume(inputDetVol)
 	if err != nil {
 		fmt.Println("Error", err)
 	}
-
-	//placement := Placement{AvailabilityZone: az}
 
 	runResult, err := ec2Svc.RunInstances(&ec2.RunInstancesInput{
 		ImageId:      aws.String("ami-c91624b0"),
@@ -179,6 +156,3 @@ func main() {
 	}
 
 }
-
-//func getWorkerInstance(zone, subnet) ec2 instance {
-//}
