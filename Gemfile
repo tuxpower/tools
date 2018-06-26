@@ -1,2 +1,2 @@
 source 'https://rubygems.org'
-gem 'aws-sdk'
+gem 'aws-sdk-ec2', '~> 1'
